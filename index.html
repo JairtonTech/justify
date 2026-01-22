@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Justificativa de Ponto</title>
+    <title>Sistema de Justificativa Automatizado</title>
+    <!-- Importando fonte Inter para a Interface Web -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         /* --- RESET E GERAL --- */
         * {
@@ -13,60 +18,118 @@
         }
 
         body {
-            background-color: #f0f0f0;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
+            background-color: #f3f4f6; /* Fundo cinza moderno "Mesa" */
+            font-family: 'Inter', sans-serif; /* Fonte da UI */
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            color: #000;
+            min-height: 100vh;
+            color: #1e293b;
         }
 
-        /* --- CONTROLES DE TELA (NÃO IMPRESSOS) --- */
-        .controls {
-            background: #2c3e50;
+        /* --- UI: CABEÇALHO MODERNO --- */
+        .app-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            padding: 1rem 2rem;
             display: flex;
-            gap: 20px;
+            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             position: sticky;
-            top: 20px;
+            top: 0;
             z-index: 1000;
         }
 
-        .btn-print {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-            transition: background 0.3s;
+        .header-content h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .btn-print:hover { background-color: #219150; }
+        .header-content p {
+            font-size: 0.875rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
 
-        /* --- FOLHA A4 --- */
+        .btn-print {
+            background-color: #ffffff;
+            color: #1e3c72;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            background-color: #f8fafc;
+        }
+
+        .btn-print:active {
+            transform: translateY(0);
+        }
+
+        /* --- UI: ÁREA DE TRABALHO --- */
+        .workspace {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* --- O DOCUMENTO (FOLHA A4) --- */
         .page {
             background: white;
             width: 210mm;
-            min-height: 297mm; /* Altura mínima A4 */
-            padding: 15mm 20mm; /* Margens padrão A4 */
-            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            min-height: 297mm;
+            padding: 15mm 20mm;
+            /* Sombra realista de papel flutuando */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             position: relative;
+            /* Fontes internas do documento permanecem formais */
+            font-family: "Times New Roman", Times, serif; 
+            color: #000;
         }
 
-        /* --- CABEÇALHO --- */
+        /* --- UI: RODAPÉ --- */
+        .app-footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 2rem;
+            text-align: center;
+            margin-top: auto;
+            border-top: 1px solid #1e293b;
+        }
+
+        .app-footer h3 {
+            color: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-footer p {
+            font-size: 0.75rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* --- ESTILOS INTERNOS DO FORMULÁRIO (Mantidos do original) --- */
+        
+        /* Cabeçalho do Form */
         .header-box {
             border: 2px solid #000;
             padding: 12px;
@@ -78,28 +141,14 @@
             background-color: #fff;
         }
 
-        .info-lines {
-            line-height: 1.8;
-            margin-bottom: 15px;
-        }
+        .info-lines { line-height: 1.8; margin-bottom: 15px; font-size: 12pt; }
+        .info-row { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .label { font-weight: bold; margin-right: 8px; white-space: nowrap; }
 
-        .info-row {
-            display: flex;
-            align-items: baseline;
-            margin-bottom: 5px;
-            font-size: 12pt;
-        }
-
-        .label {
-            font-weight: bold;
-            margin-right: 8px;
-            white-space: nowrap;
-        }
-
-        /* Inputs disfarçados de linha para preenchimento */
-        input.line-input {
+        /* Inputs e Selects do Form */
+        input.line-input, .paper-select {
             border: none;
-            border-bottom: 1px solid #999; /* Visível na tela */
+            border-bottom: 1px solid #999;
             font-family: "Times New Roman", Times, serif;
             font-size: 12pt;
             width: 100%;
@@ -109,29 +158,10 @@
             color: #000;
         }
         
-        input.line-input:focus { border-bottom: 1px solid #000; background-color: #f9f9f9; }
+        .paper-select { font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        input.line-input:focus, .paper-select:focus { border-bottom: 1px solid #000; background-color: #f0f8ff; }
 
-        /* Selects estilizados para parecer texto */
-        .paper-select {
-            font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
-            font-weight: bold;
-            border: none;
-            border-bottom: 1px solid #999;
-            background: transparent;
-            padding: 0 5px;
-            outline: none;
-            cursor: pointer;
-            text-transform: uppercase;
-            color: #000;
-        }
-
-        .paper-select:focus {
-            background-color: #eef;
-            border-bottom: 1px solid #000;
-        }
-
-        /* --- LEGENDA --- */
+        /* Legenda e Obs */
         .legend-box {
             font-size: 9pt;
             margin-bottom: 8px;
@@ -139,9 +169,7 @@
             font-family: Arial, sans-serif;
             text-align: justify;
         }
-
         .legend-title { font-weight: bold; text-decoration: underline; }
-        
         .obs {
             font-size: 9pt;
             font-weight: bold;
@@ -150,7 +178,7 @@
             font-style: italic;
         }
 
-        /* --- TABELA --- */
+        /* Tabela */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -158,57 +186,30 @@
             font-size: 10pt;
             margin-bottom: 30px;
         }
-
-        th, td {
-            border: 1px solid #000;
-            padding: 4px 6px;
-            height: 26px;
-            vertical-align: middle;
-        }
-
-        th {
-            text-align: center;
-            font-weight: bold;
-            background-color: #fff;
-            text-transform: uppercase;
-            font-size: 9pt;
-        }
-
-        /* Larguras das colunas */
+        th, td { border: 1px solid #000; padding: 4px 6px; height: 26px; vertical-align: middle; }
+        th { text-align: center; font-weight: bold; background-color: #fff; text-transform: uppercase; font-size: 9pt; }
+        
         .col-dia { width: 50px; text-align: center; font-weight: bold; }
         .col-just { width: 45%; }
-        .col-obs { width: auto; }
-
-        /* Estilos de Final de Semana */
+        
+        /* Weekend Styling */
         tr.weekend {
-            background-color: #d9d9d9 !important; /* Cinza claro */
-            -webkit-print-color-adjust: exact; /* Essencial para Chrome/Safari imprimirem cor */
+            background-color: #d9d9d9 !important;
+            -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
+        tr.weekend td { text-align: center; font-weight: normal; color: #444; }
 
-        tr.weekend td {
-            text-align: center;
-            font-weight: normal;
-            color: #444;
-        }
-
-        /* Inputs e Selects dentro da tabela */
+        /* Inputs na Tabela */
         td input, td select {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            outline: none;
-            padding: 0;
-            margin: 0;
-            cursor: pointer;
+            width: 100%; border: none; background: transparent;
+            font-family: Arial, sans-serif; font-size: 10pt;
+            outline: none; padding: 0; margin: 0; cursor: pointer;
         }
-        
         td input:focus, td select:focus { background-color: #f0f8ff; }
 
-        /* --- RODAPÉ / ASSINATURAS --- */
-        .footer {
+        /* Assinaturas */
+        .footer-sig {
             margin-top: 40px;
             display: flex;
             justify-content: space-between;
@@ -217,171 +218,158 @@
             gap: 40px;
             page-break-inside: avoid;
         }
-
-        .signature-block {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-        }
-
+        .signature-block { flex: 1; display: flex; flex-direction: column; text-align: center; }
         .signature-line-draw {
             border-bottom: 1px solid #000;
-            margin-bottom: 5px;
-            height: 30px; /* Espaço para assinar */
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
+            margin-bottom: 5px; height: 30px; display: flex; align-items: flex-end; justify-content: center;
         }
-        
-        .signature-input {
-            text-align: center;
-            border: none !important;
-            font-family: inherit;
-            font-size: inherit;
-            background: transparent;
-            width: 100%;
-        }
-        
-        .signature-label {
-            font-weight: bold;
-            font-size: 10pt;
-            font-family: Arial, sans-serif;
-        }
+        .signature-input { text-align: center; border: none !important; font-family: inherit; font-size: inherit; background: transparent; width: 100%; }
+        .signature-label { font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; }
 
-        /* --- @MEDIA PRINT --- */
+        /* --- @MEDIA PRINT (O SEGREDO DA IMPRESSÃO PERFEITA) --- */
         @media print {
-            body {
-                background: white;
+            /* Esconde a UI Web */
+            .app-header, .app-footer, .workspace {
+                display: none !important;
                 padding: 0;
                 margin: 0;
+                background: none;
+                box-shadow: none;
+            }
+
+            body {
+                background-color: white;
                 display: block;
             }
 
-            .controls { display: none !important; }
+            /* Mostra apenas a página */
+            .workspace {
+                display: block !important; /* Reativa o container pai mas sem estilo */
+                padding: 0;
+            }
 
             .page {
                 box-shadow: none;
                 margin: 0;
                 width: 100%;
                 max-width: 100%;
-                min-height: auto;
-                padding: 0;
+                padding: 0; /* Margem controlada pelo @page */
                 border: none;
             }
 
-            /* Configurações da página física */
+            /* Configuração Física da Página */
             @page {
                 size: A4;
                 margin: 10mm 15mm;
             }
 
-            /* Remove bordas visuais de inputs para parecer texto impresso */
+            /* Limpeza visual dos campos */
             input.line-input { border-bottom: none; }
-            td input { background: transparent; }
-            
-            /* Inputs vazios não devem mostrar placeholder na impressão */
             input::placeholder { color: transparent; }
-
-            /* Selects viram texto limpo */
             .paper-select, td select {
-                border: none;
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                background: transparent;
-                padding: 0;
+                border: none; appearance: none; -webkit-appearance: none; -moz-appearance: none;
+                background: transparent; padding: 0;
             }
-            /* Esconde a seta do select no Firefox/IE */
             .paper-select::-ms-expand, td select::-ms-expand { display: none; }
-
-
-            /* Evitar quebra de página */
-            table, tr, td, th { page-break-inside: avoid; }
-            .header-box, .footer { page-break-inside: avoid; }
+            
+            /* Evitar quebras */
+            table, tr, td, th, .header-box, .footer-sig { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
 
-    <!-- PAINEL DE CONTROLE -->
-    <div class="controls">
-        <button class="btn-print" onclick="window.print()">Imprimir Ficha 🖨️</button>
-    </div>
-
-    <!-- FOLHA A4 -->
-    <div class="page">
-        <!-- TÍTULO -->
-        <div class="header-box">
-            FORMULÁRIO INDIVIDUAL DE JUSTIFICATIVA – PONTO ELETRÔNICO
+    <!-- UI: CABEÇALHO DA APLICAÇÃO -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1>Sistema de Justificativa Automatizado 📝</h1>
+            <p>Facilitando o preenchimento e gestão mensal de ponto</p>
         </div>
+        <button class="btn-print" onclick="window.print()">
+            Imprimir Ficha 🖨️
+        </button>
+    </header>
 
-        <!-- DADOS DO CABEÇALHO -->
-        <div class="info-lines">
-            <div class="info-row">
-                <span class="label">Nome:</span>
-                <!-- Campo editável, sem valor padrão, com placeholder sugerindo ação -->
-                <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite seu nome completo aqui...">
+    <!-- UI: ÁREA DE TRABALHO -->
+    <main class="workspace">
+        
+        <!-- O DOCUMENTO A4 -->
+        <div class="page">
+            <!-- TÍTULO DOCUMENTO -->
+            <div class="header-box">
+                FORMULÁRIO INDIVIDUAL DE JUSTIFICATIVA – PONTO ELETRÔNICO
             </div>
-            <div class="info-row">
-                <span class="label">Empresa/OSC:</span>
-                <select class="paper-select" style="font-weight: normal;">
-                    <option value="SPS – ADES">SPS – ADES</option>
-                    <option value="SPS – SOBEF">SPS – SOBEF</option>
-                </select>
-            </div>
-            <div class="info-row">
-                <span class="label">Setor:</span>
-                <span>SPS: CEPP</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Mês/Ano:</span>
-                <!-- Selects inseridos na linha do formulário -->
-                <select id="selMes" class="paper-select"></select>
-                <span style="font-weight: bold; margin: 0 4px;">/</span>
-                <select id="selAno" class="paper-select"></select>
-            </div>
-        </div>
 
-        <!-- LEGENDA E OBS -->
-        <div class="legend-box">
-            <span class="legend-title">Legenda:</span> 
-            A) Ponto Facultativo; B) Serviço Externo; C) Justificado Pela Chefia Imediata; D) Falecimento de Parente; F) Férias; G) Licença; H) Ocorrência Coletiva; I) Participação Cursos/Seminários; J) Atestado/Declaração(anexar).
-        </div>
-        <div class="obs">
-            Obs.: (Preencher apenas os dias a serem justificados e anexar as devidas evidências).
-        </div>
-
-        <!-- TABELA DINÂMICA -->
-        <table id="timesheetTable">
-            <thead>
-                <tr>
-                    <th class="col-dia">DIA</th>
-                    <th class="col-just">JUSTIFICATIVA</th>
-                    <th class="col-obs">OBSERVAÇÕES</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Linhas geradas via JavaScript -->
-            </tbody>
-        </table>
-
-        <!-- ASSINATURAS -->
-        <div class="footer">
-            <div class="signature-block">
-                <div class="signature-line-draw">
-                    <!-- Campo de assinatura agora editável e sincronizado, mas permite edição -->
-                    <input type="text" class="signature-input" id="assFuncionario" placeholder="Nome para assinatura">
+            <!-- DADOS DO CABEÇALHO -->
+            <div class="info-lines">
+                <div class="info-row">
+                    <span class="label">Nome:</span>
+                    <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite seu nome completo aqui...">
                 </div>
-                <span class="signature-label">Nome do Funcionário</span>
+                <div class="info-row">
+                    <span class="label">Empresa/OSC:</span>
+                    <select class="paper-select" style="font-weight: normal;">
+                        <option value="SPS – ADES">SPS – ADES</option>
+                        <option value="SPS – SOBEF">SPS – SOBEF</option>
+                    </select>
+                </div>
+                <div class="info-row">
+                    <span class="label">Setor:</span>
+                    <span>SPS: CEPP</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Mês/Ano:</span>
+                    <select id="selMes" class="paper-select"></select>
+                    <span style="font-weight: bold; margin: 0 4px;">/</span>
+                    <select id="selAno" class="paper-select"></select>
+                </div>
             </div>
-            
-            <div class="signature-block">
-                 <div class="signature-line-draw"></div>
-                 <span class="signature-label">Ass. Coordenador(a)</span>
+
+            <!-- LEGENDA E OBS -->
+            <div class="legend-box">
+                <span class="legend-title">Legenda:</span> 
+                A) Ponto Facultativo; B) Serviço Externo; C) Justificado Pela Chefia Imediata; D) Falecimento de Parente; F) Férias; G) Licença; H) Ocorrência Coletiva; I) Participação Cursos/Seminários; J) Atestado/Declaração(anexar).
+            </div>
+            <div class="obs">
+                Obs.: (Preencher apenas os dias a serem justificados e anexar as devidas evidências).
+            </div>
+
+            <!-- TABELA DINÂMICA -->
+            <table id="timesheetTable">
+                <thead>
+                    <tr>
+                        <th class="col-dia">DIA</th>
+                        <th class="col-just">JUSTIFICATIVA</th>
+                        <th class="col-obs">OBSERVAÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JS vai preencher aqui -->
+                </tbody>
+            </table>
+
+            <!-- ASSINATURAS -->
+            <div class="footer-sig">
+                <div class="signature-block">
+                    <div class="signature-line-draw">
+                        <input type="text" class="signature-input" id="assFuncionario" placeholder="Nome para assinatura">
+                    </div>
+                    <span class="signature-label">Nome do Funcionário</span>
+                </div>
+                
+                <div class="signature-block">
+                     <div class="signature-line-draw"></div>
+                     <span class="signature-label">Ass. Coordenador(a)</span>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- UI: RODAPÉ DA APLICAÇÃO -->
+    <footer class="app-footer">
+        <h3>Desenvolvido por Jairton Filho 2026</h3>
+        <p>Sistema desenvolvido em motivação de estudo do curso de ADS, adaptando a tecnologia à realidade de trabalho.</p>
+    </footer>
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
@@ -390,12 +378,10 @@
             "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
         ];
         
-        // Intervalo de anos solicitado: 2025 a 2030
         const yearRange = [2025, 2026, 2027, 2028, 2029, 2030];
 
-        // Opções predefinidas para a coluna de Justificativa
         const justificationOptions = [
-            "", // Opção vazia inicial
+            "", 
             "Ponto Facultativo",
             "Serviço Externo",
             "Justificado Pela Chefia Imediata",
@@ -414,15 +400,15 @@
         const assInput = document.getElementById('assFuncionario');
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Popular Select de Meses
+            // Popular Meses
             monthNames.forEach((mes, index) => {
                 const option = document.createElement('option');
-                option.value = index; // 0 a 11
+                option.value = index;
                 option.textContent = mes;
                 selMes.appendChild(option);
             });
 
-            // 2. Popular Select de Anos (2025-2030)
+            // Popular Anos
             yearRange.forEach(ano => {
                 const option = document.createElement('option');
                 option.value = ano;
@@ -430,22 +416,21 @@
                 selAno.appendChild(option);
             });
 
-            // 3. Definir Data Inicial (Padrão: Janeiro 2026 conforme screenshot, ou atual se dentro do range)
+            // Data Inicial
             const now = new Date();
             let initialYear = now.getFullYear();
             let initialMonth = now.getMonth();
 
-            // Ajustar se o ano atual estiver fora do range solicitado (2025-2030)
             if (initialYear < 2025) initialYear = 2025;
             if (initialYear > 2030) initialYear = 2030;
             
             selMes.value = initialMonth;
             selAno.value = initialYear;
 
-            // 4. Sincronizar assinatura inicialmente (ambos vazios)
+            // Sincronizar assinatura
             assInput.value = nomeInput.value;
 
-            // 5. Renderizar tabela
+            // Renderizar tabela
             generateTimesheet();
 
             // Event Listeners
@@ -457,29 +442,27 @@
         });
 
         function generateTimesheet() {
-            tableBody.innerHTML = ''; // Limpar tabela
+            tableBody.innerHTML = ''; 
 
-            const monthIndex = parseInt(selMes.value); // 0-11
+            const monthIndex = parseInt(selMes.value);
             const year = parseInt(selAno.value);
-
-            // Descobrir quantos dias tem o mês (dia 0 do mês seguinte = último dia do atual)
             const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, monthIndex, day);
-                const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
+                const dayOfWeek = date.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                 const dayString = day.toString().padStart(2, '0');
 
                 const tr = document.createElement('tr');
                 
-                // Coluna DIA
+                // Dia
                 const tdDia = document.createElement('td');
                 tdDia.className = 'col-dia';
                 tdDia.textContent = dayString;
                 tr.appendChild(tdDia);
 
-                // Coluna JUSTIFICATIVA
+                // Justificativa
                 const tdJust = document.createElement('td');
                 tdJust.className = 'col-just';
                 
@@ -487,7 +470,6 @@
                     tr.classList.add('weekend');
                     tdJust.textContent = (dayOfWeek === 6) ? 'Sábado' : 'Domingo';
                 } else {
-                    // Substituindo input de texto por select com opções
                     const select = document.createElement('select');
                     justificationOptions.forEach(optText => {
                         const option = document.createElement('option');
@@ -499,7 +481,7 @@
                 }
                 tr.appendChild(tdJust);
 
-                // Coluna OBSERVAÇÕES
+                // Observações
                 const tdObs = document.createElement('td');
                 tdObs.className = 'col-obs';
                 if (!isWeekend) {
