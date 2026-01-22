@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Justificativa de Ponto</title>
+    <style>
+        /* --- RESET E GERAL --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #000;
+        }
+
+        /* --- CONTROLES DE TELA (NÃO IMPRESSOS) --- */
+        .controls {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-family: Arial, sans-serif;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+        }
+
+        .controls label { font-size: 14px; font-weight: bold; }
+        
+        .controls input[type="month"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #bdc3c7;
+            font-size: 14px;
+        }
+
+        .btn-print {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+
+        .btn-print:hover { background-color: #219150; }
+
+        /* --- FOLHA A4 --- */
+        .page {
+            background: white;
+            width: 210mm;
+            min-height: 297mm; /* Altura mínima A4 */
+            padding: 15mm 20mm; /* Margens padrão A4 */
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        /* --- CABEÇALHO --- */
+        .header-box {
+            border: 2px solid #000;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            background-color: #fff;
+        }
+
+        .info-lines {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 5px;
+            font-size: 12pt;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        /* Inputs disfarçados de linha para preenchimento */
+        input.line-input {
+            border: none;
+            border-bottom: 1px solid #999; /* Visível na tela */
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            width: 100%;
+            outline: none;
+            background: transparent;
+            padding: 0 5px;
+            color: #000;
+        }
+        
+        input.line-input:focus { border-bottom: 1px solid #000; background-color: #f9f9f9; }
+
+        /* --- LEGENDA --- */
+        .legend-box {
+            font-size: 9pt;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            font-family: Arial, sans-serif;
+            text-align: justify;
+        }
+
+        .legend-title { font-weight: bold; text-decoration: underline; }
+        
+        .obs {
+            font-size: 9pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-family: Arial, sans-serif;
+            font-style: italic;
+        }
+
+        /* --- TABELA --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            height: 26px;
+            vertical-align: middle;
+        }
+
+        th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #fff;
+            text-transform: uppercase;
+            font-size: 9pt;
+        }
+
+        /* Larguras das colunas */
+        .col-dia { width: 50px; text-align: center; font-weight: bold; }
+        .col-just { width: 45%; }
+        .col-obs { width: auto; }
+
+        /* Estilos de Final de Semana */
+        tr.weekend {
+            background-color: #d9d9d9 !important; /* Cinza claro */
+            -webkit-print-color-adjust: exact; /* Essencial para Chrome/Safari imprimirem cor */
+            print-color-adjust: exact;
+        }
+
+        tr.weekend td {
+            text-align: center;
+            font-weight: normal;
+            color: #444;
+        }
+
+        /* Inputs dentro da tabela */
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            outline: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        td input:focus { background-color: #f0f8ff; }
+
+        /* --- RODAPÉ / ASSINATURAS --- */
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 11pt;
+            gap: 40px;
+            page-break-inside: avoid;
+        }
+
+        .signature-block {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .signature-line-draw {
+            border-bottom: 1px solid #000;
+            margin-bottom: 5px;
+            height: 30px; /* Espaço para assinar */
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .signature-input {
+            text-align: center;
+            border: none !important;
+            font-family: inherit;
+            font-size: inherit;
+            background: transparent;
+            width: 100%;
+        }
+        
+        .signature-label {
+            font-weight: bold;
+            font-size: 10pt;
+            font-family: Arial, sans-serif;
+        }
+
+        /* --- @MEDIA PRINT --- */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                display: block;
+            }
+
+            .controls { display: none !important; }
+
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+                min-height: auto;
+                padding: 0;
+                border: none;
+            }
+
+            /* Configurações da página física */
+            @page {
+                size: A4;
+                margin: 10mm 15mm;
+            }
+
+            /* Remove bordas visuais de inputs para parecer texto impresso */
+            input.line-input { border-bottom: none; }
+            td input { background: transparent; }
+            
+            /* Inputs vazios não devem mostrar placeholder na impressão (embora browser geralmente oculte) */
+            input::placeholder { color: transparent; }
+
+            /* Evitar quebra de página */
+            table, tr, td, th { page-break-inside: avoid; }
+            .header-box, .footer { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAINEL DE CONTROLE -->
+    <div class="controls">
+        <div>
+            <label for="monthPicker">📅 Mês de Referência: </label>
+            <input type="month" id="monthPicker">
+        </div>
+        <button class="btn-print" onclick="window.print()">Imprimir Ficha 🖨️</button>
+    </div>
+
+    <!-- FOLHA A4 -->
+    <div class="page">
+        <!-- TÍTULO -->
+        <div class="header-box">
+            FORMULÁRIO INDIVIDUAL DE JUSTIFICATIVA – PONTO ELETRÔNICO
+        </div>
+
+        <!-- DADOS DO CABEÇALHO -->
+        <div class="info-lines">
+            <div class="info-row">
+                <span class="label">Nome:</span>
+                <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite o nome completo..." value="FRANCISCO JAIRTON BESERRA RODRIGUES FILHO">
+            </div>
+            <div class="info-row">
+                <span class="label">Empresa/OSC:</span>
+                <span>SPS – ADES</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Setor:</span>
+                <span>SPS: CEPP</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Mês/Ano:</span>
+                <span id="displayMonthYear" style="text-transform: uppercase; font-weight: bold;">JANEIRO / 2024</span>
+            </div>
+        </div>
+
+        <!-- LEGENDA E OBS -->
+        <div class="legend-box">
+            <span class="legend-title">Legenda:</span> 
+            A) Ponto Facultativo; B) Serviço Externo; C) Justificado Pela Chefia Imediata; D) Falecimento de Parente; F) Férias; G) Licença; H) Ocorrência Coletiva; I) Participação Cursos/Seminários.
+        </div>
+        <div class="obs">
+            Obs.: (Preencher apenas os dias a serem justificados e anexar as devidas evidências).
+        </div>
+
+        <!-- TABELA DINÂMICA -->
+        <table id="timesheetTable">
+            <thead>
+                <tr>
+                    <th class="col-dia">DIA</th>
+                    <th class="col-just">JUSTIFICATIVA</th>
+                    <th class="col-obs">OBSERVAÇÕES</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas geradas via JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- ASSINATURAS -->
+        <div class="footer">
+            <div class="signature-block">
+                <div class="signature-line-draw">
+                    <input type="text" class="signature-input" id="assFuncionario" readonly>
+                </div>
+                <span class="signature-label">Ass. Funcionário</span>
+            </div>
+            
+            <div class="signature-block">
+                 <div class="signature-line-draw"></div>
+                 <span class="signature-label">COORDENADOR (a)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        const monthNames = [
+            "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+            "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
+        ];
+
+        const monthPicker = document.getElementById('monthPicker');
+        const displayMonthYear = document.getElementById('displayMonthYear');
+        const tableBody = document.querySelector('#timesheetTable tbody');
+        const nomeInput = document.getElementById('nomeFuncionario');
+        const assInput = document.getElementById('assFuncionario');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar com o mês atual
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            monthPicker.value = `${year}-${month}`;
+
+            // Sincronizar assinatura inicial
+            assInput.value = nomeInput.value;
+
+            // Renderizar tabela inicial
+            generateTimesheet();
+
+            // Event Listeners
+            monthPicker.addEventListener('change', generateTimesheet);
+            nomeInput.addEventListener('input', () => {
+                assInput.value = nomeInput.value;
+            });
+        });
+
+        function generateTimesheet() {
+            tableBody.innerHTML = ''; // Limpar tabela
+
+            if (!monthPicker.value) return;
+
+            const [yearStr, monthStr] = monthPicker.value.split('-');
+            const year = parseInt(yearStr);
+            const monthIndex = parseInt(monthStr) - 1; // 0-11
+
+            // Atualiza texto do cabeçalho
+            displayMonthYear.textContent = `${monthNames[monthIndex]} / ${year}`;
+
+            // Descobrir quantos dias tem o mês (dia 0 do mês seguinte = último dia do atual)
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, monthIndex, day);
+                const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const dayString = day.toString().padStart(2, '0');
+
+                const tr = document.createElement('tr');
+                
+                // Coluna DIA
+                const tdDia = document.createElement('td');
+                tdDia.className = 'col-dia';
+                tdDia.textContent = dayString;
+                tr.appendChild(tdDia);
+
+                // Coluna JUSTIFICATIVA
+                const tdJust = document.createElement('td');
+                tdJust.className = 'col-just';
+                
+                if (isWeekend) {
+                    tr.classList.add('weekend');
+                    tdJust.textContent = (dayOfWeek === 6) ? 'Sábado' : 'Domingo';
+                    // Fim de semana não tem inputs, apenas texto fixo
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    // input.placeholder = 'Digite aqui...'; // Opcional
+                    tdJust.appendChild(input);
+                }
+                tr.appendChild(tdJust);
+
+                // Coluna OBSERVAÇÕES
+                const tdObs = document.createElement('td');
+                tdObs.className = 'col-obs';
+                if (!isWeekend) {
+                    const inputObs = document.createElement('input');
+                    inputObs.type = 'text';
+                    tdObs.appendChild(inputObs);
+                }
+                tr.appendChild(tdObs);
+
+                tableBody.appendChild(tr);
+            }
+        }
+    </script>
+</body>
+</html>
