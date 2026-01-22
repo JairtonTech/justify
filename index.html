@@ -40,15 +40,6 @@
             z-index: 1000;
         }
 
-        .controls label { font-size: 14px; font-weight: bold; }
-        
-        .controls input[type="month"] {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #bdc3c7;
-            font-size: 14px;
-        }
-
         .btn-print {
             background-color: #27ae60;
             color: white;
@@ -119,6 +110,26 @@
         }
         
         input.line-input:focus { border-bottom: 1px solid #000; background-color: #f9f9f9; }
+
+        /* Selects estilizados para parecer texto */
+        .paper-select {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            font-weight: bold;
+            border: none;
+            border-bottom: 1px solid #999;
+            background: transparent;
+            padding: 0 5px;
+            outline: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            color: #000;
+        }
+
+        .paper-select:focus {
+            background-color: #eef;
+            border-bottom: 1px solid #000;
+        }
 
         /* --- LEGENDA --- */
         .legend-box {
@@ -268,8 +279,21 @@
             input.line-input { border-bottom: none; }
             td input { background: transparent; }
             
-            /* Inputs vazios não devem mostrar placeholder na impressão (embora browser geralmente oculte) */
+            /* Inputs vazios não devem mostrar placeholder na impressão */
             input::placeholder { color: transparent; }
+
+            /* Selects viram texto limpo */
+            .paper-select {
+                border: none;
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background: transparent;
+                padding: 0;
+            }
+            /* Esconde a seta do select no Firefox/IE */
+            .paper-select::-ms-expand { display: none; }
+
 
             /* Evitar quebra de página */
             table, tr, td, th { page-break-inside: avoid; }
@@ -281,10 +305,6 @@
 
     <!-- PAINEL DE CONTROLE -->
     <div class="controls">
-        <div>
-            <label for="monthPicker">📅 Mês de Referência: </label>
-            <input type="month" id="monthPicker">
-        </div>
         <button class="btn-print" onclick="window.print()">Imprimir Ficha 🖨️</button>
     </div>
 
@@ -299,6 +319,7 @@
         <div class="info-lines">
             <div class="info-row">
                 <span class="label">Nome:</span>
+                <!-- Campo editável conforme solicitado -->
                 <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite o nome completo..." value="FRANCISCO JAIRTON BESERRA RODRIGUES FILHO">
             </div>
             <div class="info-row">
@@ -311,7 +332,10 @@
             </div>
             <div class="info-row">
                 <span class="label">Mês/Ano:</span>
-                <span id="displayMonthYear" style="text-transform: uppercase; font-weight: bold;">JANEIRO / 2024</span>
+                <!-- Selects inseridos na linha do formulário -->
+                <select id="selMes" class="paper-select"></select>
+                <span style="font-weight: bold; margin: 0 4px;">/</span>
+                <select id="selAno" class="paper-select"></select>
             </div>
         </div>
 
@@ -360,28 +384,54 @@
             "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
             "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
         ];
+        
+        // Intervalo de anos solicitado: 2025 a 2030
+        const yearRange = [2025, 2026, 2027, 2028, 2029, 2030];
 
-        const monthPicker = document.getElementById('monthPicker');
-        const displayMonthYear = document.getElementById('displayMonthYear');
+        const selMes = document.getElementById('selMes');
+        const selAno = document.getElementById('selAno');
         const tableBody = document.querySelector('#timesheetTable tbody');
         const nomeInput = document.getElementById('nomeFuncionario');
         const assInput = document.getElementById('assFuncionario');
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar com o mês atual
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            monthPicker.value = `${year}-${month}`;
+            // 1. Popular Select de Meses
+            monthNames.forEach((mes, index) => {
+                const option = document.createElement('option');
+                option.value = index; // 0 a 11
+                option.textContent = mes;
+                selMes.appendChild(option);
+            });
 
-            // Sincronizar assinatura inicial
+            // 2. Popular Select de Anos (2025-2030)
+            yearRange.forEach(ano => {
+                const option = document.createElement('option');
+                option.value = ano;
+                option.textContent = ano;
+                selAno.appendChild(option);
+            });
+
+            // 3. Definir Data Inicial (Padrão: Janeiro 2026 conforme screenshot, ou atual se dentro do range)
+            const now = new Date();
+            let initialYear = now.getFullYear();
+            let initialMonth = now.getMonth();
+
+            // Ajustar se o ano atual estiver fora do range solicitado (2025-2030)
+            if (initialYear < 2025) initialYear = 2025;
+            if (initialYear > 2030) initialYear = 2030;
+            
+            selMes.value = initialMonth;
+            selAno.value = initialYear;
+
+            // 4. Sincronizar assinatura
             assInput.value = nomeInput.value;
 
-            // Renderizar tabela inicial
+            // 5. Renderizar tabela
             generateTimesheet();
 
             // Event Listeners
-            monthPicker.addEventListener('change', generateTimesheet);
+            selMes.addEventListener('change', generateTimesheet);
+            selAno.addEventListener('change', generateTimesheet);
             nomeInput.addEventListener('input', () => {
                 assInput.value = nomeInput.value;
             });
@@ -390,14 +440,8 @@
         function generateTimesheet() {
             tableBody.innerHTML = ''; // Limpar tabela
 
-            if (!monthPicker.value) return;
-
-            const [yearStr, monthStr] = monthPicker.value.split('-');
-            const year = parseInt(yearStr);
-            const monthIndex = parseInt(monthStr) - 1; // 0-11
-
-            // Atualiza texto do cabeçalho
-            displayMonthYear.textContent = `${monthNames[monthIndex]} / ${year}`;
+            const monthIndex = parseInt(selMes.value); // 0-11
+            const year = parseInt(selAno.value);
 
             // Descobrir quantos dias tem o mês (dia 0 do mês seguinte = último dia do atual)
             const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -423,11 +467,9 @@
                 if (isWeekend) {
                     tr.classList.add('weekend');
                     tdJust.textContent = (dayOfWeek === 6) ? 'Sábado' : 'Domingo';
-                    // Fim de semana não tem inputs, apenas texto fixo
                 } else {
                     const input = document.createElement('input');
                     input.type = 'text';
-                    // input.placeholder = 'Digite aqui...'; // Opcional
                     tdJust.appendChild(input);
                 }
                 tr.appendChild(tdJust);
