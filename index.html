@@ -192,8 +192,8 @@
             color: #444;
         }
 
-        /* Inputs dentro da tabela */
-        td input {
+        /* Inputs e Selects dentro da tabela */
+        td input, td select {
             width: 100%;
             border: none;
             background: transparent;
@@ -202,9 +202,10 @@
             outline: none;
             padding: 0;
             margin: 0;
+            cursor: pointer;
         }
         
-        td input:focus { background-color: #f0f8ff; }
+        td input:focus, td select:focus { background-color: #f0f8ff; }
 
         /* --- RODAPÉ / ASSINATURAS --- */
         .footer {
@@ -283,7 +284,7 @@
             input::placeholder { color: transparent; }
 
             /* Selects viram texto limpo */
-            .paper-select {
+            .paper-select, td select {
                 border: none;
                 appearance: none;
                 -webkit-appearance: none;
@@ -292,7 +293,7 @@
                 padding: 0;
             }
             /* Esconde a seta do select no Firefox/IE */
-            .paper-select::-ms-expand { display: none; }
+            .paper-select::-ms-expand, td select::-ms-expand { display: none; }
 
 
             /* Evitar quebra de página */
@@ -319,8 +320,8 @@
         <div class="info-lines">
             <div class="info-row">
                 <span class="label">Nome:</span>
-                <!-- Campo editável conforme solicitado -->
-                <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite o nome completo..." value="FRANCISCO JAIRTON BESERRA RODRIGUES FILHO">
+                <!-- Campo editável, sem valor padrão, com placeholder sugerindo ação -->
+                <input type="text" class="line-input" id="nomeFuncionario" placeholder="Digite seu nome completo aqui...">
             </div>
             <div class="info-row">
                 <span class="label">Empresa/OSC:</span>
@@ -366,14 +367,15 @@
         <div class="footer">
             <div class="signature-block">
                 <div class="signature-line-draw">
-                    <input type="text" class="signature-input" id="assFuncionario" readonly>
+                    <!-- Campo de assinatura agora editável e sincronizado, mas permite edição -->
+                    <input type="text" class="signature-input" id="assFuncionario" placeholder="Nome para assinatura">
                 </div>
-                <span class="signature-label">Ass. Funcionário</span>
+                <span class="signature-label">Nome do Funcionário</span>
             </div>
             
             <div class="signature-block">
                  <div class="signature-line-draw"></div>
-                 <span class="signature-label">COORDENADOR (a)</span>
+                 <span class="signature-label">Ass. Coordenador(a)</span>
             </div>
         </div>
     </div>
@@ -387,6 +389,19 @@
         
         // Intervalo de anos solicitado: 2025 a 2030
         const yearRange = [2025, 2026, 2027, 2028, 2029, 2030];
+
+        // Opções predefinidas para a coluna de Justificativa
+        const justificationOptions = [
+            "", // Opção vazia inicial
+            "Ponto Facultativo",
+            "Serviço Externo",
+            "Justificado Pela Chefia Imediata",
+            "Falecimento de Parente",
+            "Férias",
+            "Licença",
+            "Ocorrência Coletiva",
+            "Participação Cursos/Seminários"
+        ];
 
         const selMes = document.getElementById('selMes');
         const selAno = document.getElementById('selAno');
@@ -423,7 +438,7 @@
             selMes.value = initialMonth;
             selAno.value = initialYear;
 
-            // 4. Sincronizar assinatura
+            // 4. Sincronizar assinatura inicialmente (ambos vazios)
             assInput.value = nomeInput.value;
 
             // 5. Renderizar tabela
@@ -468,9 +483,15 @@
                     tr.classList.add('weekend');
                     tdJust.textContent = (dayOfWeek === 6) ? 'Sábado' : 'Domingo';
                 } else {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    tdJust.appendChild(input);
+                    // Substituindo input de texto por select com opções
+                    const select = document.createElement('select');
+                    justificationOptions.forEach(optText => {
+                        const option = document.createElement('option');
+                        option.value = optText;
+                        option.textContent = optText;
+                        select.appendChild(option);
+                    });
+                    tdJust.appendChild(select);
                 }
                 tr.appendChild(tdJust);
 
