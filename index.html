@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         /* --- RESET E GERAL --- */
@@ -52,11 +54,15 @@
             opacity: 0.9;
         }
 
-        .btn-print {
-            background-color: #ffffff;
-            color: #1e3c72;
+        /* Container dos botões de ação */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-action {
             border: none;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
@@ -69,17 +75,25 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #1e3c72;
+            background-color: #ffffff;
         }
 
-        .btn-print:hover {
+        .btn-action:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
             background-color: #f8fafc;
         }
 
-        .btn-print:active {
-            transform: translateY(0);
+        .btn-action:active { transform: translateY(0); }
+
+        /* Estilo específico para PDF (vermelho/destaque) */
+        .btn-pdf {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
         }
+        .btn-pdf:hover { background-color: #ffcdd2; }
 
         /* --- UI: ÁREA DE TRABALHO --- */
         .workspace {
@@ -235,7 +249,7 @@
             }
 
             /* Esconde a UI Web */
-            .app-header, .app-footer, .btn-print {
+            .app-header, .app-footer, .btn-action {
                 display: none !important;
             }
 
@@ -263,43 +277,16 @@
                 max-width: 100%;
                 padding: 10mm 15mm; /* Margens internas do documento */
                 border: none;
-                /* Removendo altura mínima para evitar páginas em branco extras */
                 min-height: auto; 
             }
 
             /* --- OTIMIZAÇÃO DE ESPAÇO PARA CABER EM 1 PÁGINA --- */
-            
-            /* Reduz um pouco o cabeçalho na impressão */
-            .header-box {
-                font-size: 12pt;
-                padding: 8px;
-                margin-bottom: 10px;
-            }
-
-            .info-lines {
-                margin-bottom: 10px;
-                line-height: 1.4;
-            }
-
-            /* Reduz tamanho da fonte e altura das linhas da tabela */
-            table {
-                margin-bottom: 15px;
-                font-size: 9pt; /* Reduz fonte da tabela */
-            }
-
-            th, td {
-                height: 20px; /* Reduz altura da linha */
-                padding: 2px 4px;
-            }
-
-            /* Reduz espaço das assinaturas */
-            .footer-sig {
-                margin-top: 20px;
-                gap: 20px;
-            }
-            .signature-line-draw {
-                height: 25px;
-            }
+            .header-box { font-size: 12pt; padding: 8px; margin-bottom: 10px; }
+            .info-lines { margin-bottom: 10px; line-height: 1.4; }
+            table { margin-bottom: 15px; font-size: 9pt; }
+            th, td { height: 20px; padding: 2px 4px; }
+            .footer-sig { margin-top: 20px; gap: 20px; }
+            .signature-line-draw { height: 25px; }
 
             /* Limpeza visual dos campos */
             input.line-input { border-bottom: none; }
@@ -309,8 +296,6 @@
                 background: transparent; padding: 0;
             }
             .paper-select::-ms-expand, td select::-ms-expand { display: none; }
-            
-            /* Evitar quebras */
             table, tr, td, th, .header-box, .footer-sig { page-break-inside: avoid; }
         }
     </style>
@@ -323,16 +308,23 @@
             <h1>Sistema de Justificativa Automatizado 📝</h1>
             <p>Facilitando o preenchimento e gestão mensal de ponto</p>
         </div>
-        <button class="btn-print" onclick="window.print()">
-            Imprimir Ficha 🖨️
-        </button>
+        <div class="header-actions">
+            <!-- Botão Salvar PDF -->
+            <button class="btn-action btn-pdf" onclick="downloadPDF()">
+                Salvar PDF 📄
+            </button>
+            <!-- Botão Imprimir -->
+            <button class="btn-action" onclick="window.print()">
+                Imprimir Ficha 🖨️
+            </button>
+        </div>
     </header>
 
     <!-- UI: ÁREA DE TRABALHO -->
     <main class="workspace">
         
         <!-- O DOCUMENTO A4 -->
-        <div class="page">
+        <div class="page" id="document-page">
             <!-- TÍTULO DOCUMENTO -->
             <div class="header-box">
                 FORMULÁRIO INDIVIDUAL DE JUSTIFICATIVA – PONTO ELETRÔNICO
@@ -531,6 +523,41 @@
 
                 tableBody.appendChild(tr);
             }
+        }
+
+        /* --- FUNÇÃO PARA GERAR PDF --- */
+        function downloadPDF() {
+            // Seleciona a folha A4
+            const element = document.getElementById('document-page');
+
+            // Preparação: Sincronizar valores dos Inputs e Selects
+            // (Bibliotecas de PDF as vezes não leem o valor digitado se não estiver no atributo 'value')
+            const inputs = element.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.setAttribute('value', input.value);
+            });
+
+            const selects = element.querySelectorAll('select');
+            selects.forEach(select => {
+                const selectedOption = select.options[select.selectedIndex];
+                // Remove selected de todos e adiciona no atual
+                Array.from(select.options).forEach(opt => opt.removeAttribute('selected'));
+                if (selectedOption) {
+                    selectedOption.setAttribute('selected', 'selected');
+                }
+            });
+
+            // Configurações do html2pdf
+            const opt = {
+                margin:       0, // Sem margem, pois a .page já tem padding interno
+                filename:     `justificativa_${selMes.options[selMes.selectedIndex].text}_${selAno.value}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, // Scale 2 melhora a resolução do texto
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Gera e salva
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
