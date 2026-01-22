@@ -416,8 +416,10 @@
         
         const yearRange = [2025, 2026, 2027, 2028, 2029, 2030];
 
+        // Adicionado "Feriado" na lista de opções
         const justificationOptions = [
             "", 
+            "Feriado",
             "Ponto Facultativo",
             "Serviço Externo",
             "Justificado Pela Chefia Imediata",
@@ -477,6 +479,66 @@
             });
         });
 
+        // --- LÓGICA DE FERIADOS ---
+        
+        // Algoritmo de Gauss para calcular a Páscoa
+        function getEaster(year) {
+            const f = Math.floor;
+            const G = year % 19;
+            const C = f(year / 100);
+            const H = (C - f(C / 4) - f((8 * C + 13) / 25) + 19 * G + 15) % 30;
+            const I = H - f(H / 28) * (1 - f(29 / (H + 1)) * f((21 - G) / 11));
+            const J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7;
+            const L = I - J;
+            const month = 3 + f((L + 40) / 44);
+            const day = L + 28 - 31 * f(month / 4);
+            return new Date(year, month - 1, day);
+        }
+
+        // Verifica se é feriado e retorna o nome
+        function getHolidayName(day, month, year) {
+            // Nota: 'month' aqui é 0-indexado (0=Jan, 11=Dez)
+            
+            // Feriados Fixos
+            if (day === 1 && month === 0) return "Confraternização Universal";
+            if (day === 21 && month === 3) return "Tiradentes"; // Abril = 3
+            if (day === 1 && month === 4) return "Dia do Trabalho"; // Maio = 4
+            if (day === 7 && month === 8) return "Independência do Brasil"; // Set = 8
+            if (day === 12 && month === 9) return "Nossa Sr.ª Aparecida - Padroeira do Brasil"; // Out = 9
+            if (day === 2 && month === 10) return "Finados"; // Nov = 10
+            if (day === 15 && month === 10) return "Proclamação da República";
+            if (day === 20 && month === 10) return "Dia Nacional de Zumbi e da Consciência Negra";
+            if (day === 25 && month === 11) return "Natal"; // Dez = 11
+
+            // Feriados Móveis (Baseados na Páscoa)
+            const easter = getEaster(year);
+            const checkDate = new Date(year, month, day);
+
+            // Função auxiliar para comparar datas ignorando horário
+            const isSameDate = (d1, d2) => 
+                d1.getDate() === d2.getDate() && 
+                d1.getMonth() === d2.getMonth() && 
+                d1.getFullYear() === d2.getFullYear();
+
+            // Carnaval Segunda (-48 dias da Páscoa)
+            const carnivalMon = new Date(easter); carnivalMon.setDate(easter.getDate() - 48);
+            if (isSameDate(checkDate, carnivalMon)) return "Carnaval";
+
+            // Carnaval Terça (-47 dias da Páscoa)
+            const carnivalTue = new Date(easter); carnivalTue.setDate(easter.getDate() - 47);
+            if (isSameDate(checkDate, carnivalTue)) return "Carnaval";
+
+            // Paixão de Cristo (-2 dias da Páscoa)
+            const goodFri = new Date(easter); goodFri.setDate(easter.getDate() - 2);
+            if (isSameDate(checkDate, goodFri)) return "Paixão de Cristo";
+
+            // Corpus Christi (+60 dias da Páscoa)
+            const corpus = new Date(easter); corpus.setDate(easter.getDate() + 60);
+            if (isSameDate(checkDate, corpus)) return "Corpus Christi";
+
+            return null;
+        }
+
         function generateTimesheet() {
             tableBody.innerHTML = ''; 
 
@@ -489,6 +551,10 @@
                 const dayOfWeek = date.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                 const dayString = day.toString().padStart(2, '0');
+
+                // Verificar Feriado
+                const holidayName = getHolidayName(day, monthIndex, year);
+                const isHoliday = holidayName !== null;
 
                 const tr = document.createElement('tr');
                 
@@ -513,6 +579,12 @@
                         option.textContent = optText;
                         select.appendChild(option);
                     });
+                    
+                    // Se for feriado e não for fim de semana, seleciona "Feriado"
+                    if (isHoliday) {
+                        select.value = "Feriado";
+                    }
+                    
                     tdJust.appendChild(select);
                 }
                 tr.appendChild(tdJust);
@@ -520,9 +592,17 @@
                 // Observações
                 const tdObs = document.createElement('td');
                 tdObs.className = 'col-obs';
+                
+                // Só cria input se não for fim de semana
                 if (!isWeekend) {
                     const inputObs = document.createElement('input');
                     inputObs.type = 'text';
+                    
+                    // Se for feriado, preenche com o nome, mas mantém editável
+                    if (isHoliday) {
+                        inputObs.value = holidayName;
+                    }
+                    
                     tdObs.appendChild(inputObs);
                 }
                 tr.appendChild(tdObs);
