@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Biblioteca para gerar PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         /* --- RESET E GERAL --- */
@@ -86,14 +84,6 @@
         }
 
         .btn-action:active { transform: translateY(0); }
-
-        /* Estilo específico para PDF (vermelho/destaque) */
-        .btn-pdf {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ffcdd2;
-        }
-        .btn-pdf:hover { background-color: #ffcdd2; }
 
         /* --- UI: ÁREA DE TRABALHO --- */
         .workspace {
@@ -250,14 +240,6 @@
         .signature-input { text-align: center; border: none !important; font-family: inherit; font-size: inherit; background: transparent; width: 100%; }
         .signature-label { font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; }
 
-        /* --- CLASSE AUXILIAR PARA GERAÇÃO DE PDF VIA JS --- */
-        .generating-pdf .page {
-            box-shadow: none !important;
-            margin: 0 !important;
-            border: none !important;
-            /* Garante que o html2pdf capture apenas o conteúdo limpo */
-        }
-
         /* --- @MEDIA PRINT (IMPRESSÃO NATIVA DO NAVEGADOR) --- */
         @media print {
             /* Configuração da Página Física */
@@ -326,10 +308,6 @@
             <p>Facilitando o preenchimento e gestão mensal de ponto</p>
         </div>
         <div class="header-actions">
-            <!-- Botão Salvar PDF -->
-            <button class="btn-action btn-pdf" onclick="downloadPDF()">
-                Salvar PDF 📄
-            </button>
             <!-- Botão Imprimir -->
             <button class="btn-action" onclick="window.print()">
                 Imprimir Ficha 🖨️
@@ -543,45 +521,6 @@
 
                 tableBody.appendChild(tr);
             }
-        }
-
-        /* --- FUNÇÃO PARA GERAR PDF --- */
-        function downloadPDF() {
-            // Seleciona a folha A4
-            const element = document.getElementById('document-page');
-            
-            // Adiciona classe para garantir estilos de impressão limpos
-            document.body.classList.add('generating-pdf');
-
-            // Preparação: Sincronizar valores dos Inputs e Selects
-            const inputs = element.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.setAttribute('value', input.value);
-            });
-
-            const selects = element.querySelectorAll('select');
-            selects.forEach(select => {
-                const selectedOption = select.options[select.selectedIndex];
-                Array.from(select.options).forEach(opt => opt.removeAttribute('selected'));
-                if (selectedOption) {
-                    selectedOption.setAttribute('selected', 'selected');
-                }
-            });
-
-            // Configurações do html2pdf
-            const opt = {
-                margin:       0,
-                filename:     `justificativa_${selMes.options[selMes.selectedIndex].text}_${selAno.value}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                // Retornando a escala 2 para melhor qualidade visual
-                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Gera e salva, depois remove a classe
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.body.classList.remove('generating-pdf');
-            });
         }
     </script>
 </body>
