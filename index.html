@@ -107,14 +107,17 @@
         .page {
             background: white;
             width: 210mm;
-            min-height: 297mm;
-            padding: 15mm 20mm;
+            /* Altura fixa A4 para visualização, mas deixamos expandir se necessário na tela */
+            min-height: 297mm; 
+            padding: 10mm 15mm; /* Margem interna reduzida para caber mais conteúdo */
             /* Sombra realista de papel flutuando */
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             position: relative;
             /* Fontes internas do documento permanecem formais */
             font-family: "Times New Roman", Times, serif; 
             color: #000;
+            /* Garante que o que passar disso seja cortado ou tratado, mas aqui queremos que caiba */
+            box-sizing: border-box;
         }
 
         /* --- UI: RODAPÉ --- */
@@ -141,22 +144,22 @@
             line-height: 1.5;
         }
 
-        /* --- ESTILOS INTERNOS DO FORMULÁRIO (Mantidos do original) --- */
+        /* --- ESTILOS INTERNOS DO FORMULÁRIO (OTIMIZADOS PARA ESPAÇO) --- */
         
         /* Cabeçalho do Form */
         .header-box {
             border: 2px solid #000;
-            padding: 12px;
+            padding: 8px; /* Reduzido */
             text-align: center;
             font-weight: bold;
-            font-size: 14pt;
-            margin-bottom: 20px;
+            font-size: 12pt; /* Reduzido levemente */
+            margin-bottom: 10px; /* Reduzido */
             text-transform: uppercase;
             background-color: #fff;
         }
 
-        .info-lines { line-height: 1.8; margin-bottom: 15px; font-size: 12pt; }
-        .info-row { display: flex; align-items: baseline; margin-bottom: 5px; }
+        .info-lines { line-height: 1.4; margin-bottom: 10px; font-size: 11pt; }
+        .info-row { display: flex; align-items: baseline; margin-bottom: 3px; }
         .label { font-weight: bold; margin-right: 8px; white-space: nowrap; }
 
         /* Inputs e Selects do Form */
@@ -164,11 +167,11 @@
             border: none;
             border-bottom: 1px solid #999;
             font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
+            font-size: 11pt;
             width: 100%;
             outline: none;
             background: transparent;
-            padding: 0 5px;
+            padding: 0 2px;
             color: #000;
         }
         
@@ -177,17 +180,17 @@
 
         /* Legenda e Obs */
         .legend-box {
-            font-size: 9pt;
-            margin-bottom: 8px;
-            line-height: 1.4;
+            font-size: 8pt; /* Reduzido */
+            margin-bottom: 4px;
+            line-height: 1.2;
             font-family: Arial, sans-serif;
             text-align: justify;
         }
         .legend-title { font-weight: bold; text-decoration: underline; }
         .obs {
-            font-size: 9pt;
+            font-size: 8pt;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             font-family: Arial, sans-serif;
             font-style: italic;
         }
@@ -197,13 +200,18 @@
             width: 100%;
             border-collapse: collapse;
             font-family: Arial, sans-serif;
-            font-size: 10pt;
-            margin-bottom: 30px;
+            font-size: 9pt; /* Reduzido */
+            margin-bottom: 15px;
         }
-        th, td { border: 1px solid #000; padding: 4px 6px; height: 26px; vertical-align: middle; }
-        th { text-align: center; font-weight: bold; background-color: #fff; text-transform: uppercase; font-size: 9pt; }
+        th, td { 
+            border: 1px solid #000; 
+            padding: 1px 4px; /* Padding vertical mínimo */
+            height: 19px; /* Altura forçada para caber 31 dias */
+            vertical-align: middle; 
+        }
+        th { text-align: center; font-weight: bold; background-color: #fff; text-transform: uppercase; font-size: 8pt; height: 20px; }
         
-        .col-dia { width: 50px; text-align: center; font-weight: bold; }
+        .col-dia { width: 40px; text-align: center; font-weight: bold; }
         .col-just { width: 45%; }
         
         /* Weekend Styling */
@@ -217,35 +225,44 @@
         /* Inputs na Tabela */
         td input, td select {
             width: 100%; border: none; background: transparent;
-            font-family: Arial, sans-serif; font-size: 10pt;
+            font-family: Arial, sans-serif; font-size: 9pt;
             outline: none; padding: 0; margin: 0; cursor: pointer;
+            height: 100%; display: block;
         }
         td input:focus, td select:focus { background-color: #f0f8ff; }
 
         /* Assinaturas */
         .footer-sig {
-            margin-top: 40px;
+            margin-top: 20px; /* Reduzido */
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            font-size: 11pt;
-            gap: 40px;
+            font-size: 10pt;
+            gap: 30px;
             page-break-inside: avoid;
         }
         .signature-block { flex: 1; display: flex; flex-direction: column; text-align: center; }
         .signature-line-draw {
             border-bottom: 1px solid #000;
-            margin-bottom: 5px; height: 30px; display: flex; align-items: flex-end; justify-content: center;
+            margin-bottom: 2px; height: 25px; display: flex; align-items: flex-end; justify-content: center;
         }
         .signature-input { text-align: center; border: none !important; font-family: inherit; font-size: inherit; background: transparent; width: 100%; }
-        .signature-label { font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; }
+        .signature-label { font-weight: bold; font-size: 9pt; font-family: Arial, sans-serif; }
 
-        /* --- @MEDIA PRINT (O SEGREDO DA IMPRESSÃO PERFEITA) --- */
+        /* --- CLASSE AUXILIAR PARA GERAÇÃO DE PDF VIA JS --- */
+        .generating-pdf .page {
+            box-shadow: none !important;
+            margin: 0 !important;
+            border: none !important;
+            /* Garante que o html2pdf capture apenas o conteúdo limpo */
+        }
+
+        /* --- @MEDIA PRINT (IMPRESSÃO NATIVA DO NAVEGADOR) --- */
         @media print {
             /* Configuração da Página Física */
             @page {
                 size: A4;
-                margin: 0; /* REMOVE cabeçalhos e rodapés do navegador (data, url, etc) */
+                margin: 0; /* Remove cabeçalhos e rodapés do navegador */
             }
 
             /* Esconde a UI Web */
@@ -257,7 +274,7 @@
                 background: white;
                 margin: 0;
                 padding: 0;
-                -webkit-print-color-adjust: exact; /* Garante cores de fundo (cinza fds) */
+                -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact;
             }
 
@@ -273,20 +290,18 @@
             .page {
                 box-shadow: none;
                 margin: 0;
-                width: 210mm; /* Largura A4 */
+                width: 210mm;
                 max-width: 100%;
-                padding: 10mm 15mm; /* Margens internas do documento */
+                /* Padding suficiente para impressoras não cortarem, mas pequeno para caber conteúdo */
+                padding: 10mm 15mm; 
                 border: none;
-                min-height: auto; 
+                overflow: hidden; /* Corta qualquer excesso acidental */
             }
 
-            /* --- OTIMIZAÇÃO DE ESPAÇO PARA CABER EM 1 PÁGINA --- */
-            .header-box { font-size: 12pt; padding: 8px; margin-bottom: 10px; }
-            .info-lines { margin-bottom: 10px; line-height: 1.4; }
-            table { margin-bottom: 15px; font-size: 9pt; }
-            th, td { height: 20px; padding: 2px 4px; }
-            .footer-sig { margin-top: 20px; gap: 20px; }
-            .signature-line-draw { height: 25px; }
+            /* Forçar layout compacto na impressão */
+            .header-box { margin-bottom: 5px; font-size: 11pt; padding: 5px; }
+            table { margin-bottom: 10px; }
+            .footer-sig { margin-top: 15px; }
 
             /* Limpeza visual dos campos */
             input.line-input { border-bottom: none; }
@@ -296,6 +311,8 @@
                 background: transparent; padding: 0;
             }
             .paper-select::-ms-expand, td select::-ms-expand { display: none; }
+            
+            /* Evitar quebras a todo custo */
             table, tr, td, th, .header-box, .footer-sig { page-break-inside: avoid; }
         }
     </style>
@@ -529,9 +546,11 @@
         function downloadPDF() {
             // Seleciona a folha A4
             const element = document.getElementById('document-page');
+            
+            // Adiciona classe para garantir estilos de impressão limpos
+            document.body.classList.add('generating-pdf');
 
             // Preparação: Sincronizar valores dos Inputs e Selects
-            // (Bibliotecas de PDF as vezes não leem o valor digitado se não estiver no atributo 'value')
             const inputs = element.querySelectorAll('input');
             inputs.forEach(input => {
                 input.setAttribute('value', input.value);
@@ -540,7 +559,6 @@
             const selects = element.querySelectorAll('select');
             selects.forEach(select => {
                 const selectedOption = select.options[select.selectedIndex];
-                // Remove selected de todos e adiciona no atual
                 Array.from(select.options).forEach(opt => opt.removeAttribute('selected'));
                 if (selectedOption) {
                     selectedOption.setAttribute('selected', 'selected');
@@ -549,15 +567,18 @@
 
             // Configurações do html2pdf
             const opt = {
-                margin:       0, // Sem margem, pois a .page já tem padding interno
+                margin:       0,
                 filename:     `justificativa_${selMes.options[selMes.selectedIndex].text}_${selAno.value}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, // Scale 2 melhora a resolução do texto
+                // Escala menor (1.5) evita que pequenos pixels extras criem uma 2ª página
+                html2canvas:  { scale: 1.5, useCORS: true, scrollY: 0 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Gera e salva
-            html2pdf().set(opt).from(element).save();
+            // Gera e salva, depois remove a classe
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.body.classList.remove('generating-pdf');
+            });
         }
     </script>
 </body>
