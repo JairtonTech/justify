@@ -15,8 +15,6 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
         }
 
         body {
@@ -79,6 +77,25 @@
         }
         .app-footer h3 { color: #f8fafc; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
         .app-footer p { font-size: 0.75rem; max-width: 600px; margin: 0 auto; line-height: 1.5; }
+
+        /* --- ÁREA DE CONTROLE DE VERSÃO --- */
+        .version-control {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .version-control span { display: inline-flex; align-items: center; gap: 4px; }
+        .version-tag { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #cbd5e1; }
+        .commit-hash { color: #38bdf8; }
+        .build-date { color: #fbbf24; }
 
         /* --- ÁREA DE TRABALHO (Container Web) --- */
         .workspace {
@@ -197,89 +214,82 @@
         .signature-label { font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; }
 
         /* ==========================================================================
-           CSS "BULLETPROOF" PARA IMPRESSÃO
-           Objetivo: Encaixar estritamente em 1 página A4 em qualquer navegador
+           CSS "BULLETPROOF" NUCLEAR - ISOLAMENTO DE IMPRESSÃO
            ========================================================================== */
         @media print {
-            /* 1. Reset da Página do Navegador */
+            /* 1. RESET DE PÁGINA */
             @page {
-                size: A4 portrait; /* Força A4 vertical */
-                margin: 0; /* Remove margens do navegador (header/footer padrão) */
-            }
-
-            /* 2. Ocultar UI da Web */
-            .app-header, .app-footer, .btn-action {
-                display: none !important;
-            }
-
-            /* 3. Configuração do Corpo para Impressão */
-            html, body {
-                width: 210mm;
-                height: 297mm;
+                size: A4 portrait;
                 margin: 0;
-                padding: 0;
-                overflow: hidden; /* Evita vazamento para pág 2 */
-                background: white;
             }
 
-            .workspace {
-                display: block !important;
+            /* 2. OCULTAR TUDO (Isolamento Total) */
+            /* Isso oculta o container React, o body, o root, tudo */
+            body, body * {
+                visibility: hidden;
+            }
+
+            /* Reset do fluxo do body para não interferir no posicionamento absoluto */
+            body {
+                margin: 0 !important;
                 padding: 0 !important;
-                margin: 0 !important;
+                background: #fff !important;
+                display: block !important; /* Mata o Flexbox do layout web */
+                height: auto !important;
+                overflow: visible !important;
             }
 
-            /* 4. Container da Folha (O Segredo da Escala) */
+            /* 3. RESGATAR O CONTEÚDO (Tornar visível apenas a folha) */
+            .page, .page * {
+                visibility: visible;
+            }
+
+            /* 4. POSICIONAMENTO ABSOLUTO (O Segredo) */
+            /* Move a folha para o início absoluto da viewport de impressão,
+               ignorando onde ela estava no HTML ou qualquer scroll */
             .page {
-                width: 210mm !important;
-                height: 297mm !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                /* Altura automática ou fixa dependendo do conteúdo, 
+                   A4 é 297mm, mas deixamos fluir se necessário, ou travamos */
+                min-height: 297mm; 
                 margin: 0 !important;
-                padding: 10mm 10mm 5mm 10mm !important; /* Margens internas seguras */
+                padding: 10mm 10mm 5mm 10mm !important; /* Padding interno para segurança */
                 
-                /* Estratégia de Escala: 
-                   Reduz levemente (98%) para garantir que a área imprimível da impressora
-                   física (hard margins) não corte as bordas. */
-                transform: scale(0.98);
-                transform-origin: top center; /* Centraliza a redução */
+                /* Forçar impressão de cores de fundo (cinza fim de semana) */
+                background-color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
                 
+                /* Remover sombras e bordas da UI de "papel na mesa" */
                 box-shadow: none !important;
                 border: none !important;
-                position: absolute;
-                top: 0;
-                left: 0;
+                
+                /* Garantir que fique por cima de tudo */
+                z-index: 9999;
+                
+                /* Pequeno scale de segurança se a impressora tiver margens físicas grandes */
+                transform: scale(0.99);
+                transform-origin: top left;
             }
 
-            /* 5. Otimização Vertical da Tabela para Impressão */
-            /* Reduzimos a altura das linhas apenas na impressão para economizar espaço vertical */
+            /* 5. OTIMIZAÇÃO DE ESPAÇO (Mesma lógica anterior) */
             th, td {
-                height: 21px !important; /* Redução de 27px para 21px (~180px economizados em 31 dias) */
+                height: 21px !important; 
                 font-size: 9.5pt !important;
                 padding: 0 2px !important;
-                border: 1px solid #000 !important; /* Preto absoluto */
+                border: 1px solid #000 !important;
             }
 
-            td input, td select {
-                font-size: 9.5pt !important;
-            }
-
-            /* Ajustes de Fontes para Leitura em Papel */
             .header-box { font-size: 14pt !important; margin-bottom: 8px !important; border: 2px solid #000 !important; }
             .info-lines { font-size: 10.5pt !important; margin-bottom: 8px !important; }
-            .legend-box { font-size: 8pt !important; margin-bottom: 4px !important; }
-            .obs { font-size: 8pt !important; margin-bottom: 4px !important; }
-
-            /* Limpeza Visual */
-            input.line-input { border-bottom: none !important; }
-            input::placeholder { color: transparent; }
             
-            /* Remove aparencia de Select nativo para parecer texto impresso */
-            .paper-select, td select {
-                border: none; appearance: none; -webkit-appearance: none; -moz-appearance: none;
-                background: transparent !important; padding: 0;
-            }
-            .paper-select::-ms-expand, td select::-ms-expand { display: none; }
-
-            /* Evita quebras de página indesejadas (embora o overflow hidden garanta 1 pág) */
-            table, tr, td, th, .header-box, .footer-sig { page-break-inside: avoid; }
+            /* Inputs limpos */
+            input.line-input { border-bottom: none !important; }
+            .paper-select, td select { appearance: none; border: none; background: transparent !important; }
+            .paper-select::-ms-expand { display: none; }
         }
     </style>
 </head>
@@ -381,6 +391,15 @@
     <footer class="app-footer">
         <h3>Desenvolvido por Jairton Filho 2026</h3>
         <p>Sistema desenvolvido em motivação de estudo do curso de ADS, adaptando a tecnologia à realidade de trabalho.</p>
+        
+        <!-- ÁREA DE CONTROLE DE VERSÃO -->
+        <div class="version-control">
+            <span>Versão: <strong class="version-tag">1.4.0</strong></span>
+            <span>•</span>
+            <span>Commit: <strong class="commit-hash">#7d2a9f</strong></span>
+            <span>•</span>
+            <span>Build: <strong id="buildDate" class="build-date"></strong></span>
+        </div>
     </footer>
 
     <!-- LÓGICA JAVASCRIPT -->
@@ -414,6 +433,12 @@
         const assInput = document.getElementById('assFuncionario');
 
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Version Control: Data Real ---
+            // Define a data atual como data de Build para garantir que não seja fictícia
+            const today = new Date();
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            document.getElementById('buildDate').textContent = today.toLocaleDateString('pt-BR', options);
+
             // Popular Meses
             monthNames.forEach((mes, index) => {
                 const option = document.createElement('option');
