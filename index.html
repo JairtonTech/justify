@@ -215,11 +215,21 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
-                overflow: hidden !important; /* Evita scrollbars fantasmas */
+                overflow: visible !important; /* Importante para permitir que o conteúdo flua */
             }
 
-            .workspace, .app-header, .app-footer {
-                display: none !important; /* Remove do fluxo completamente */
+            /* Ocultar elementos de UI explicitamente com display: none para não ocuparem espaço */
+            .app-header, .app-footer, .btn-action {
+                display: none !important;
+            }
+
+            /* CORREÇÃO PRINCIPAL: Não usar display: none no pai (.workspace) */
+            .workspace {
+                visibility: hidden; /* Invisível, mas existe no DOM */
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
             }
 
             /* 3. Container da Página (A4 Real) */
@@ -233,7 +243,7 @@
                 width: 210mm !important; 
                 min-height: 297mm !important;
                 
-                /* Margens de Segurança para Impressora (15mm é seguro para maioria) */
+                /* Margens de Segurança para Impressora */
                 padding: 15mm !important;
                 
                 /* Reset de Estilos Web */
@@ -245,15 +255,11 @@
                 /* Forçar impressão de cores de fundo (cinza) */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-
-                /* FALLBACK DE ZOOM (Opcional, ativado para garantir tamanho) 
-                   Alguns navegadores escalam para caber nas margens. 
-                   Isso tenta forçar 100% ou um leve aumento. */
-                /* transform: scale(1); */ 
+                
+                z-index: 9999;
             }
 
             /* 4. Tipografia Baseada em PT (Pontos Físicos) */
-            /* Isso garante que o texto tenha o mesmo tamanho que teria no Word */
             .page { font-size: 12pt !important; }
             .header-box { font-size: 16pt !important; border: 2pt solid #000 !important; padding: 3mm !important; }
             .info-lines { font-size: 12pt !important; margin-bottom: 5mm !important; }
@@ -262,7 +268,7 @@
             /* Inputs e Selects */
             input.line-input, .paper-select { 
                 font-size: 12pt !important; 
-                border-bottom: 1pt solid #000 !important; /* Linha mais definida */
+                border-bottom: 1pt solid #000 !important;
             }
             .paper-select, td select { 
                 appearance: none; -webkit-appearance: none; 
@@ -270,46 +276,43 @@
             }
             .paper-select::-ms-expand { display: none; }
 
-            /* 5. Tabela Fluida e Altura Mínima em MM */
+            /* 5. Tabela Fluida */
             table {
-                width: 100% !important; /* Ocupa os 100% da área útil (210mm - 30mm margins = 180mm) */
+                width: 100% !important;
                 font-size: 11pt !important;
                 border-collapse: collapse !important;
             }
 
             th {
-                height: 8mm !important; /* Altura física para o cabeçalho */
+                height: 8mm !important;
                 font-size: 10pt !important;
                 background-color: #fff !important;
                 border: 1pt solid #000 !important;
             }
 
             td {
-                /* Altura calculada: ~297mm (pág) - 80mm (cabeçalho/rodapé/margens) / 31 dias = ~7mm */
                 height: 6.5mm !important; 
                 padding: 0 1mm !important;
                 border: 1pt solid #000 !important;
-                font-size: 10.5pt !important; /* Ajuste fino para caber na célula */
+                font-size: 10.5pt !important;
             }
 
-            /* Garantir que inputs dentro da tabela preencham sem bordas extras */
             td input, td select {
                 font-size: 10.5pt !important;
                 height: 100% !important;
             }
 
-            /* Rodapé e Assinaturas */
             .footer-sig {
                 padding-top: 5mm !important;
                 font-size: 12pt !important;
             }
             .signature-line-draw {
                 border-bottom: 1pt solid #000 !important;
-                height: 12mm !important; /* Espaço físico para assinar */
+                height: 12mm !important;
             }
             .signature-label { font-size: 10pt !important; }
 
-            /* Elementos internos visíveis */
+            /* IMPORTANTE: Resgatar visibilidade dos filhos da página */
             .page * { visibility: visible; }
         }
     </style>
@@ -415,9 +418,9 @@
         
         <!-- ÁREA DE CONTROLE DE VERSÃO -->
         <div class="version-control">
-            <span>Versão: <strong class="version-tag">1.5.0</strong></span>
+            <span>Versão: <strong class="version-tag">1.5.1</strong></span>
             <span>•</span>
-            <span>Commit: <strong class="commit-hash">#a1b2c3</strong></span>
+            <span>Commit: <strong class="commit-hash">#b2c3d4</strong></span>
             <span>•</span>
             <span>Build: <strong id="buildDate" class="build-date"></strong></span>
         </div>
