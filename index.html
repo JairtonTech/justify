@@ -198,13 +198,13 @@
 
 
         /* ==========================================================================
-           CSS DE IMPRESSÃO - CORREÇÃO DE ESCALA (1:1 REAL)
+           CSS DE IMPRESSÃO - CORREÇÃO DE ESCALA (1:1 REAL) & UMA PÁGINA
            ========================================================================== */
         @media print {
             /* 1. Reset Agressivo de Página */
             @page {
                 size: A4 portrait; /* Garante tamanho físico */
-                margin: 0; /* Remove margens do driver da impressora para controlarmos no CSS */
+                margin: 0; /* Remove margens do driver da impressora */
             }
 
             /* 2. Isolamento Nuclear */
@@ -215,104 +215,109 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
-                overflow: visible !important; /* Importante para permitir que o conteúdo flua */
+                overflow: visible !important;
             }
 
-            /* Ocultar elementos de UI explicitamente com display: none para não ocuparem espaço */
+            /* Ocultar elementos de UI */
             .app-header, .app-footer, .btn-action {
                 display: none !important;
             }
 
-            /* CORREÇÃO PRINCIPAL: Não usar display: none no pai (.workspace) */
+            /* Container Pai */
             .workspace {
-                visibility: hidden; /* Invisível, mas existe no DOM */
+                visibility: hidden;
                 display: block !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 border: none !important;
             }
 
-            /* 3. Container da Página (A4 Real) */
+            /* 3. Container da Página (A4 Real) - MARGENS REDUZIDAS */
             .page {
                 visibility: visible;
                 position: absolute;
                 left: 0;
                 top: 0;
                 
-                /* Dimensões Fixas Físicas */
                 width: 210mm !important; 
                 min-height: 297mm !important;
                 
-                /* Margens de Segurança para Impressora */
-                padding: 15mm !important;
+                /* Margens internas reduzidas para caber mais conteúdo verticalmente */
+                padding: 10mm !important; 
                 
-                /* Reset de Estilos Web */
                 margin: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
                 background-color: white !important;
                 
-                /* Forçar impressão de cores de fundo (cinza) */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 
                 z-index: 9999;
             }
 
-            /* 4. Tipografia Baseada em PT (Pontos Físicos) */
-            .page { font-size: 12pt !important; }
-            .header-box { font-size: 16pt !important; border: 2pt solid #000 !important; padding: 3mm !important; }
-            .info-lines { font-size: 12pt !important; margin-bottom: 5mm !important; }
+            /* 4. Tipografia Ajustada (11pt para economizar espaço) */
+            .page { font-size: 11pt !important; }
+            
+            /* Compactar Cabeçalho */
+            .header-box { 
+                font-size: 14pt !important; 
+                border: 2pt solid #000 !important; 
+                padding: 2mm !important; 
+                margin-bottom: 3mm !important; 
+            }
+            
+            /* Compactar Info Lines */
+            .info-lines { 
+                font-size: 11pt !important; 
+                margin-bottom: 3mm !important; 
+                line-height: 1.4 !important; 
+            }
+            .info-row { margin-bottom: 2mm !important; }
+            
             .legend-box, .obs { font-size: 9pt !important; margin-bottom: 2mm !important; }
             
-            /* Inputs e Selects */
             input.line-input, .paper-select { 
-                font-size: 12pt !important; 
+                font-size: 11pt !important; 
                 border-bottom: 1pt solid #000 !important;
             }
-            .paper-select, td select { 
-                appearance: none; -webkit-appearance: none; 
-                border: none; background: transparent !important; padding: 0;
-            }
-            .paper-select::-ms-expand { display: none; }
-
-            /* 5. Tabela Fluida */
+            
+            /* 5. Tabela Ultra-Compacta para caber 31 linhas */
             table {
                 width: 100% !important;
-                font-size: 11pt !important;
-                border-collapse: collapse !important;
+                font-size: 10pt !important; /* Fonte menor na tabela */
+                margin-bottom: 2mm !important;
             }
 
             th {
-                height: 8mm !important;
-                font-size: 10pt !important;
-                background-color: #fff !important;
-                border: 1pt solid #000 !important;
+                height: 6mm !important; /* Cabeçalho mais fino */
+                font-size: 9pt !important;
             }
 
             td {
-                height: 6.5mm !important; 
+                /* 5.8mm * 31 = ~180mm (deixa espaço para header e footer) */
+                height: 5.8mm !important; 
                 padding: 0 1mm !important;
-                border: 1pt solid #000 !important;
-                font-size: 10.5pt !important;
+                font-size: 9.5pt !important;
             }
 
             td input, td select {
-                font-size: 10.5pt !important;
-                height: 100% !important;
+                font-size: 9.5pt !important;
             }
 
+            /* Compactar Rodapé */
             .footer-sig {
-                padding-top: 5mm !important;
-                font-size: 12pt !important;
+                padding-top: 2mm !important;
+                font-size: 11pt !important;
             }
             .signature-line-draw {
                 border-bottom: 1pt solid #000 !important;
-                height: 12mm !important;
+                height: 10mm !important; /* Área de assinatura menor */
+                margin-bottom: 2mm !important;
             }
-            .signature-label { font-size: 10pt !important; }
+            .signature-label { font-size: 9pt !important; }
 
-            /* IMPORTANTE: Resgatar visibilidade dos filhos da página */
+            /* Resgatar visibilidade */
             .page * { visibility: visible; }
         }
     </style>
@@ -418,9 +423,9 @@
         
         <!-- ÁREA DE CONTROLE DE VERSÃO -->
         <div class="version-control">
-            <span>Versão: <strong class="version-tag">1.5.1</strong></span>
+            <span>Versão: <strong class="version-tag">1.5.2</strong></span>
             <span>•</span>
-            <span>Commit: <strong class="commit-hash">#b2c3d4</strong></span>
+            <span>Commit: <strong class="commit-hash">#c3d4e5</strong></span>
             <span>•</span>
             <span>Build: <strong id="buildDate" class="build-date"></strong></span>
         </div>
