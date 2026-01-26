@@ -182,6 +182,7 @@
         .legend-title { font-weight: bold; text-decoration: underline; }
         .obs { font-size: 10pt; font-weight: bold; margin-bottom: 8px; font-family: Arial, sans-serif; font-style: italic; }
 
+        /* ASSINATURA - ESTILOS BASE */
         .footer-sig {
             margin-top: auto;
             display: flex;
@@ -192,9 +193,25 @@
             padding-top: 10px;
         }
         .signature-block { flex: 1; display: flex; flex-direction: column; text-align: center; }
-        .signature-line-draw { border-bottom: 1px solid #000; margin-bottom: 5px; height: 40px; display: flex; align-items: flex-end; justify-content: center; }
-        .signature-input { text-align: center; border: none !important; font-family: inherit; font-size: inherit; background: transparent; width: 100%; }
-        .signature-label { font-weight: bold; font-size: 11pt; font-family: Arial, sans-serif; }
+        
+        .signature-line-draw { 
+            border-bottom: 1px solid #000; 
+            margin-bottom: 4px; 
+            height: 40px; /* Altura para assinar manualmente */
+            width: 100%;
+        }
+        
+        /* Nome sincronizado que aparece abaixo da linha */
+        .signature-name {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 11pt;
+            text-transform: uppercase;
+            min-height: 1.2em; /* Garante espaço mesmo vazio */
+            margin-bottom: 2px;
+        }
+        
+        .signature-label { font-weight: normal; font-size: 11pt; font-family: Arial, sans-serif; }
 
 
         /* ==========================================================================
@@ -313,7 +330,11 @@
             .signature-line-draw {
                 border-bottom: 1pt solid #000 !important;
                 height: 10mm !important; /* Área de assinatura menor */
-                margin-bottom: 2mm !important;
+                margin-bottom: 1mm !important;
+            }
+            .signature-name {
+                font-size: 10pt !important;
+                margin-bottom: 1mm !important;
             }
             .signature-label { font-size: 9pt !important; }
 
@@ -399,17 +420,22 @@
                 </tbody>
             </table>
 
-            <!-- ASSINATURAS -->
+            <!-- ASSINATURAS MODIFICADAS -->
             <div class="footer-sig">
+                <!-- Assinatura do Funcionário (Modificada) -->
                 <div class="signature-block">
-                    <div class="signature-line-draw">
-                        <input type="text" class="signature-input" id="assFuncionario" placeholder="Nome para assinatura">
-                    </div>
-                    <span class="signature-label">Nome do Funcionário</span>
+                    <!-- 1. Linha Vazia em Cima (Para assinar) -->
+                    <div class="signature-line-draw"></div>
+                    <!-- 2. Nome do Colaborador (Sincronizado) em baixo da linha -->
+                    <div class="signature-name" id="assFuncionarioDisplay"></div>
+                    <!-- 3. Cargo/Label - TEXTO REMOVIDO, mantido &nbsp; para estrutura -->
+                    <span class="signature-label">&nbsp;</span>
                 </div>
                 
+                <!-- Assinatura da Chefia (Padrão) -->
                 <div class="signature-block">
                      <div class="signature-line-draw"></div>
+                     <div class="signature-name"></div> <!-- Vazio para coord -->
                      <span class="signature-label">Ass. Coordenador(a)</span>
                 </div>
             </div>
@@ -423,9 +449,9 @@
         
         <!-- ÁREA DE CONTROLE DE VERSÃO -->
         <div class="version-control">
-            <span>Versão: <strong class="version-tag">1.5.2</strong></span>
+            <span>Versão: <strong class="version-tag">1.5.4</strong></span>
             <span>•</span>
-            <span>Commit: <strong class="commit-hash">#c3d4e5</strong></span>
+            <span>Commit: <strong class="commit-hash">#e5f6g7</strong></span>
             <span>•</span>
             <span>Build: <strong id="buildDate" class="build-date"></strong></span>
         </div>
@@ -459,11 +485,11 @@
         const selAno = document.getElementById('selAno');
         const tableBody = document.querySelector('#timesheetTable tbody');
         const nomeInput = document.getElementById('nomeFuncionario');
-        const assInput = document.getElementById('assFuncionario');
+        // Alterado para selecionar o elemento de texto, não input
+        const assDisplay = document.getElementById('assFuncionarioDisplay');
 
         document.addEventListener('DOMContentLoaded', () => {
             // --- Version Control: Data Real ---
-            // Define a data atual como data de Build para garantir que não seja fictícia
             const today = new Date();
             const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
             document.getElementById('buildDate').textContent = today.toLocaleDateString('pt-BR', options);
@@ -495,8 +521,8 @@
             selMes.value = initialMonth;
             selAno.value = initialYear;
 
-            // Sincronizar assinatura
-            assInput.value = nomeInput.value;
+            // Sincronizar assinatura inicial
+            assDisplay.textContent = nomeInput.value;
 
             // Renderizar tabela
             generateTimesheet();
@@ -504,14 +530,14 @@
             // Event Listeners
             selMes.addEventListener('change', generateTimesheet);
             selAno.addEventListener('change', generateTimesheet);
+            
+            // Sincronização em tempo real do Nome para a Assinatura
             nomeInput.addEventListener('input', () => {
-                assInput.value = nomeInput.value;
+                assDisplay.textContent = nomeInput.value;
             });
         });
 
         // --- LÓGICA DE FERIADOS ---
-        
-        // Algoritmo de Gauss para calcular a Páscoa
         function getEaster(year) {
             const f = Math.floor;
             const G = year % 19;
@@ -525,11 +551,7 @@
             return new Date(year, month - 1, day);
         }
 
-        // Verifica se é feriado e retorna o nome
         function getHolidayName(day, month, year) {
-            // Nota: 'month' aqui é 0-indexado (0=Jan, 11=Dez)
-            
-            // Feriados Fixos
             if (day === 1 && month === 0) return "Confraternização Universal";
             if (day === 21 && month === 3) return "Tiradentes"; // Abril = 3
             if (day === 1 && month === 4) return "Dia do Trabalho"; // Maio = 4
@@ -540,29 +562,22 @@
             if (day === 20 && month === 10) return "Dia Nacional de Zumbi e da Consciência Negra";
             if (day === 25 && month === 11) return "Natal"; // Dez = 11
 
-            // Feriados Móveis (Baseados na Páscoa)
             const easter = getEaster(year);
             const checkDate = new Date(year, month, day);
-
-            // Função auxiliar para comparar datas ignorando horário
             const isSameDate = (d1, d2) => 
                 d1.getDate() === d2.getDate() && 
                 d1.getMonth() === d2.getMonth() && 
                 d1.getFullYear() === d2.getFullYear();
 
-            // Carnaval Segunda (-48 dias da Páscoa)
             const carnivalMon = new Date(easter); carnivalMon.setDate(easter.getDate() - 48);
             if (isSameDate(checkDate, carnivalMon)) return "Carnaval";
 
-            // Carnaval Terça (-47 dias da Páscoa)
             const carnivalTue = new Date(easter); carnivalTue.setDate(easter.getDate() - 47);
             if (isSameDate(checkDate, carnivalTue)) return "Carnaval";
 
-            // Paixão de Cristo (-2 dias da Páscoa)
             const goodFri = new Date(easter); goodFri.setDate(easter.getDate() - 2);
             if (isSameDate(checkDate, goodFri)) return "Paixão de Cristo";
 
-            // Corpus Christi (+60 dias da Páscoa)
             const corpus = new Date(easter); corpus.setDate(easter.getDate() + 60);
             if (isSameDate(checkDate, corpus)) return "Corpus Christi";
 
@@ -581,20 +596,16 @@
                 const dayOfWeek = date.getDay();
                 const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
                 const dayString = day.toString().padStart(2, '0');
-
-                // Verificar Feriado
                 const holidayName = getHolidayName(day, monthIndex, year);
                 const isHoliday = holidayName !== null;
 
                 const tr = document.createElement('tr');
                 
-                // Dia
                 const tdDia = document.createElement('td');
                 tdDia.className = 'col-dia';
                 tdDia.textContent = dayString;
                 tr.appendChild(tdDia);
 
-                // Justificativa
                 const tdJust = document.createElement('td');
                 tdJust.className = 'col-just';
                 
@@ -609,30 +620,22 @@
                         option.textContent = optText;
                         select.appendChild(option);
                     });
-                    
-                    // Se for feriado e não for fim de semana, seleciona "Feriado"
                     if (isHoliday) {
                         select.value = "Feriado";
                     }
-                    
                     tdJust.appendChild(select);
                 }
                 tr.appendChild(tdJust);
 
-                // Observações
                 const tdObs = document.createElement('td');
                 tdObs.className = 'col-obs';
                 
-                // Só cria input se não for fim de semana
                 if (!isWeekend) {
                     const inputObs = document.createElement('input');
                     inputObs.type = 'text';
-                    
-                    // Se for feriado, preenche com o nome, mas mantém editável
                     if (isHoliday) {
                         inputObs.value = holidayName;
                     }
-                    
                     tdObs.appendChild(inputObs);
                 }
                 tr.appendChild(tdObs);
